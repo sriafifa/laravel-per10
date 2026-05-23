@@ -1,33 +1,28 @@
 <?php
 
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\ArticleController;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+// Rute umum non-autentikasi
+Route::view('/', 'welcome');
+Route::view('/beranda', 'user.beranda');
+Route::view('/tentang', 'user.tentang');
 
-
-Route::get('/beranda', function () {
-    // return 'Hello Word';
-    return view('user.beranda');
-});
-
-Route::get('/tentang', function () {
-    return view('user.tentang');
-});
-
-Route::get('/kerapan', function () {
-    return view('user.kerapan');
-});
-
-Route::get('/kokocoran', function () {
-    return view('user.kokocoran');
-});
-
-Route::get('/gendeng', function () {
-    return view('user.gendeng');
-});
+// Autentikasi bawaan Laravel UI
 Auth::routes();
+Route::get('/home', [HomeController::class, 'index'])->name('home');
 
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+// Rute Group untuk Admin (Hanya boleh diakses oleh user yang sudah login)
+Route::middleware(['auth'])->prefix('admin')->group(function () {
+    // Halaman Utama Dashboard
+    Route::view('/dashboard', 'admin.dashboard')->name('admin.dashboard');
 
+    // CRUD Pengguna, Kategori & Berita
+    Route::resource('users', UserController::class);
+    Route::resource('categories', CategoryController::class);
+    Route::resource('articles', ArticleController::class);
+});
